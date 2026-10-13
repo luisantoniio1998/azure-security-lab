@@ -21,40 +21,6 @@ resource "azurerm_network_security_rule" "allow_backend_database" {
   network_security_group_name = azurerm_network_security_group.database.name
 }
 
-resource "azurerm_network_security_rule" "deny_other_database" {
-  name      = "Deny-Other-Database"
-  priority  = 200
-  direction = "Inbound"
-  access    = "Deny"
-  protocol  = "*"
-
-  source_port_range      = "*"
-  destination_port_range = "*"
-
-  source_address_prefix      = "*"
-  destination_address_prefix = "10.10.2.0/24"
-
-  resource_group_name         = azurerm_resource_group.lab.name
-  network_security_group_name = azurerm_network_security_group.database.name
-}
-
-resource "azurerm_network_security_rule" "deny_database_outbound" {
-  name      = "Deny-Database-Outbound"
-  priority  = 400
-  direction = "Outbound"
-  access    = "Deny"
-  protocol  = "*"
-
-  source_port_range      = "*"
-  destination_port_range = "*"
-
-  source_address_prefix      = "10.10.2.0/24"
-  destination_address_prefix = "*"
-
-  resource_group_name         = azurerm_resource_group.lab.name
-  network_security_group_name = azurerm_network_security_group.database.name
-}
-
 resource "azurerm_subnet_network_security_group_association" "database" {
   subnet_id                 = azurerm_subnet.database.id
   network_security_group_id = azurerm_network_security_group.database.id
@@ -105,6 +71,23 @@ resource "azurerm_network_security_rule" "allow_postgresql_internal_outbound" {
   destination_port_range = var.postgresql_port
 
   source_address_prefix      = "10.10.2.0/24"
+  destination_address_prefix = "10.10.2.0/24"
+
+  resource_group_name         = azurerm_resource_group.lab.name
+  network_security_group_name = azurerm_network_security_group.database.name
+}
+
+resource "azurerm_network_security_rule" "deny_other_database_clients" {
+  name      = "Deny-Other-Database-Clients"
+  priority  = 200
+  direction = "Inbound"
+  access    = "Deny"
+  protocol  = "Tcp"
+
+  source_port_range      = "*"
+  destination_port_range = "5432"
+
+  source_address_prefix      = "10.10.0.0/16"
   destination_address_prefix = "10.10.2.0/24"
 
   resource_group_name         = azurerm_resource_group.lab.name
