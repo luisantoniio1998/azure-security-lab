@@ -1,15 +1,16 @@
 resource "azurerm_postgresql_flexible_server" "database" {
+  count = var.deploy_workloads ? 1 : 0
+
   name                = "psql-security-lab"
   resource_group_name = azurerm_resource_group.lab.name
   location            = azurerm_virtual_network.lab.location
 
-  version = "16"
-
+  version    = "16"
   sku_name   = "B_Standard_B1ms"
   storage_mb = 32768
 
   delegated_subnet_id = azurerm_subnet.database.id
-  private_dns_zone_id = azurerm_private_dns_zone.postgresql.id
+  private_dns_zone_id = azurerm_private_dns_zone.postgresql[0].id
 
   public_network_access_enabled = false
 
