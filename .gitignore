@@ -1,0 +1,59 @@
+# ==========================================
+# Terraform
+# ==========================================
+
+# Local Terraform directories
+**/.terraform/*
+
+# Terraform state files (may contain secrets)
+*.tfstate
+*.tfstate.*
+
+# Terraform variable files (may contain secrets)
+*.tfvars
+*.tfvars.json
+
+# Terraform crash logs
+crash.log
+crash.*.log
+
+# Terraform plan files
+*.tfplan
+tfplan
+tfplan.*
+
+# Terraform override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform CLI configuration
+.terraformrc
+terraform.rc
+
+# ==========================================
+# Environment variables / Secrets
+# ==========================================
+
+.env
+.env.*
+!.env.example
+
+*.pem
+*.key
+*.pfx
+
+# ==========================================
+# macOS / Editors
+# ==========================================
+
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+*.swp
+*.swo
+*~
