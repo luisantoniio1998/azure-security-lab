@@ -13,14 +13,16 @@ resource "azurerm_linux_web_app" "backend" {
   location            = azurerm_virtual_network.lab.location
   service_plan_id     = azurerm_service_plan.backend.id
 
-  https_only = true
+  https_only                = true
+  virtual_network_subnet_id = azurerm_subnet.backend.id
 
   identity {
     type = "SystemAssigned"
   }
 
   site_config {
-    minimum_tls_version = "1.2"
+    minimum_tls_version    = "1.2"
+    vnet_route_all_enabled = true
 
     application_stack {
       node_version = "22-lts"
