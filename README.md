@@ -1,127 +1,40 @@
 # Azure Security Lab
 
-Azure security engineering playground.
+My personal lab for learning how to build and secure an application in Azure, then use its logs to investigate suspicious activity.
 
-## Current Architecture
+## What is here
 
-```text
-Azure for Students
-│
-├── Microsoft Entra ID
-│   └── sg-azure-security-readers
-│       └── Reader → rg-azure-security-lab
-│
-├── Azure Monitor
-│   └── SEC-004: RBAC Changes
-│       └── Activity Log → Email Alert
-│
-├── Azure Policy
-│   └── SEC-005: Deny Public IP Addresses
-│
-└── rg-azure-security-lab
-    │
-    └── Spain Central
-        │
-        └── vnet-security-lab (10.10.0.0/16)
-            │
-            ├── snet-backend (10.10.1.0/24)
-            │   ├── nsg-backend
-            │   └── Delegation: App Service
-            │
-            └── snet-database (10.10.2.0/24)
-                ├── nsg-database
-                └── Delegation: PostgreSQL
+- Terraform for a virtual network, separate application and database subnets, and network security rules.
+- A small Python API with a public health check and an API-key protected endpoint.
+- JSON logs for requests, authentication successes, failures and application errors. Keys and request bodies are not logged.
+- Configuration for a future Python App Service and private PostgreSQL server.
+- A local script that prepares logs for CrowdStrike ingestion.
+
+The API works locally. It does not use PostgreSQL yet. App Service and PostgreSQL are disabled by default (`deploy_workloads=false`). CrowdStrike ingestion and detection alerts are not connected yet.
+
+Earlier lab work also covered Entra permissions, an RBAC-change email alert and an Azure Policy blocking public IPs. Those controls are not managed by the Terraform currently in this repository, and their live status has not been rechecked.
+
+## Run locally
+
+Requires Python 3.12 or 3.13. From the repository root:
+
+```bash
+python3 -m venv app/.venv
+app/.venv/bin/python -m pip install -r app/requirements.txt
+cp app/.env.example app/.env
 ```
 
-Infrastructure managed with Terraform.
+Set a random local `API_KEY` in `app/.env`, then start the API:
 
-Application and database workloads are not deployed.
-
-## Planned Architecture
-
-```text
-                        INTERNET
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │  App Service│
-                    │  HTTPS Only │
-                    └──────┬──────┘
-                           │
-                 VNet Integration
-                           │
-                           ▼
-              ┌──────────────────────┐
-              │  vnet-security-lab   │
-              │    10.10.0.0/16      │
-              │                      │
-              │  ┌────────────────┐  │
-              │  │ snet-backend   │  │
-              │  │ 10.10.1.0/24   │  │
-              │  │ nsg-backend    │  │
-              │  └───────┬────────┘  │
-              │          │ TCP 5432  │
-              │          ▼           │
-              │  ┌────────────────┐  │
-              │  │ snet-database  │  │
-              │  │ 10.10.2.0/24   │  │
-              │  │                │  │
-              │  │ PostgreSQL     │  │
-              │  │ Private Access │  │
-              │  │ nsg-database   │  │
-              │  └────────────────┘  │
-              │                      │
-              │  Private DNS         │
-              └──────────────────────┘
-                           │
-                           ▼
-                 ┌─────────────────┐
-                 │ Azure Monitoring│
-                 │ Activity Logs   │
-                 │ Diagnostic Logs │
-                 └────────┬────────┘
-                          │
-                          ▼
-                 ┌─────────────────┐
-                 │ Security / SIEM │
-                 │ Detection Rules │
-                 │ Threat Hunting  │
-                 └─────────────────┘
-
-              ┌─────────────────────┐
-              │   Security Controls │
-              ├─────────────────────┤
-              │ Entra ID + RBAC     │
-              │ Azure Policy        │
-              │ Network Isolation   │
-              │ Managed Identity    │
-              │ TLS / HTTPS         │
-              │ Security Monitoring │
-              └─────────────────────┘
+```bash
+cd app
+.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000 --no-access-log
 ```
 
-## Roadmap
+Open `http://127.0.0.1:8000/health`. `/secure` returns 401 unless the correct key is supplied in the `X-API-Key` header.
 
-- [x] Terraform infrastructure
-- [x] Virtual network and subnet segmentation
-- [x] Network Security Groups
-- [x] Entra ID security group and RBAC
-- [x] RBAC activity monitoring and email alerts
-- [x] Azure Policy — deny Public IP resources
-- [ ] Network hardening
-- [ ] Resource locks
-- [ ] App Service deployment
-- [ ] Private PostgreSQL deployment
-- [ ] Private DNS configuration
-- [ ] Managed identity authentication
-- [ ] Diagnostic logging
-- [ ] SIEM integration
-- [ ] Detection engineering and threat hunting
+## Next
 
----
+Connect local logs to the CrowdStrike trial and test a detection. Azure deployment needs a separate cost review and explicit approval.
 
-Build. Break. Secure. Repeat.
-
-## FastAPI and CrowdStrike preparation
-
-Python runtime, safe packaging and correlated JSON events are prepared; paid workloads remain disabled. Start SIEM work locally using [the CrowdStrike workflow](docs/crowdstrike.md). See [deployment prerequisites](docs/deployment.md) before any Azure deployment.
+More detail: [CrowdStrike workflow](docs/crowdstrike.md), [deployment notes](docs/deployment.md), [project review](docs/review.md).

@@ -21,4 +21,4 @@ app/.venv/bin/python -m unittest discover -s tests -v
 terraform -chdir=terraform validate
 ```
 
-Existing network-security.tf and resource-locks.tf edits were present at takeover and were left uncommitted for separate review.
+Existing network-security.tf and resource-locks.tf edits were present at takeover. They were inspected during the local review and remain uncommitted; no Azure application was performed. See review.md for remaining deployment prerequisites.
