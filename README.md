@@ -22,3 +22,11 @@ The application still needs database connectivity and Key Vault access permissio
 Once CrowdStrike trial access is available, ingest the lab events and test detections for suspicious activity. Local events let me start that part before deploying the paid Azure workloads.
 
 Any Azure deployment comes after checking the plan and cost.
+
+Relevant Evidence on Azure UI: 
+
+<img width="418" height="406" alt="Screenshot 2026-10-13 at 17 29 11" src="https://github.com/user-attachments/assets/be6c727d-df92-40c8-99f8-b03feb25419a" />
+<img width="985" height="495" alt="Screenshot 2026-10-13 at 17 28 09" src="https://github.com/user-attachments/assets/e0cd5de4-8382-4b02-9dd7-add2b6ff6926" />
+<img width="2093" height="950" alt="Screenshot 2026-10-13 at 17 27 52" src="https://github.com/user-attachments/assets/a6c1fc56-801c-4a78-98de-9dce76c4d935" />
+<img width="1284" height="978" alt="Screenshot 2026-10-13 at 17 19 45" src="https://github.com/user-attachments/assets/9222481c-4088-4c6d-a544-9e15407060fe" />
+<img width="1474" height="791" alt="Screenshot 2026-10-13 at 17 18 37" src="https://github.com/user-attachments/assets/3f276723-2783-462c-9786-a65165b7cac3" />
