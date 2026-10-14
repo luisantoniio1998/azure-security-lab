@@ -1,40 +1,36 @@
 # Azure Security Lab
 
-My personal lab for learning how to build and secure an application in Azure, then use its logs to investigate suspicious activity.
+A personal lab to learn Azure security. I'm building a small environment, trying security controls and learning how to monitor what happens.
 
-## What is here
+## So far
 
-- Terraform for a virtual network, separate application and database subnets, and network security rules.
-- A small Python API with a public health check and an API-key protected endpoint.
-- JSON logs for requests, authentication successes, failures and application errors. Keys and request bodies are not logged.
-- Configuration for a future Python App Service and private PostgreSQL server.
-- A local script that prepares logs for CrowdStrike ingestion.
+- Set up a virtual network with separate backend and database subnets using Terraform.
+- Added network security rules.
+- Worked through Entra ID permissions, an email alert for RBAC changes and a policy to block public IPs.
+- Added a small Python API with API-key authentication and JSON security logs.
+- Prepared the App Service and private PostgreSQL configuration, but kept them disabled to save credits.
 
-The API works locally. It does not use PostgreSQL yet. App Service and PostgreSQL are disabled by default (`deploy_workloads=false`). CrowdStrike ingestion and detection alerts are not connected yet.
+The API runs locally. It isn't connected to PostgreSQL or CrowdStrike yet.
 
-Earlier lab work also covered Entra permissions, an RBAC-change email alert and an Azure Policy blocking public IPs. Those controls are not managed by the Terraform currently in this repository, and their live status has not been rechecked.
-
-## Run locally
-
-Requires Python 3.12 or 3.13. From the repository root:
+## Run the app
 
 ```bash
 python3 -m venv app/.venv
-app/.venv/bin/python -m pip install -r app/requirements.txt
+app/.venv/bin/pip install -r app/requirements.txt
 cp app/.env.example app/.env
 ```
 
-Set a random local `API_KEY` in `app/.env`, then start the API:
+Add a local API key to `app/.env`, then:
 
 ```bash
 cd app
-.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000 --no-access-log
+.venv/bin/uvicorn main:app --reload --no-access-log
 ```
 
-Open `http://127.0.0.1:8000/health`. `/secure` returns 401 unless the correct key is supplied in the `X-API-Key` header.
+Try `/health` at `http://127.0.0.1:8000`. `/secure` needs the key in the `X-API-Key` header.
 
 ## Next
 
-Connect local logs to the CrowdStrike trial and test a detection. Azure deployment needs a separate cost review and explicit approval.
+Send the local logs to CrowdStrike when trial access is available, then try a detection for failed authentication attempts.
 
-More detail: [CrowdStrike workflow](docs/crowdstrike.md), [deployment notes](docs/deployment.md), [project review](docs/review.md).
+Paid Azure workloads stay off (`deploy_workloads=false`). No deployment until I've checked the cost.
