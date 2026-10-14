@@ -121,3 +121,7 @@ Application and database workloads are not deployed.
 ---
 
 Build. Break. Secure. Repeat.
+
+## FastAPI and CrowdStrike preparation
+
+Python runtime, safe packaging and correlated JSON events are prepared; paid workloads remain disabled. Start SIEM work locally using [the CrowdStrike workflow](docs/crowdstrike.md). See [deployment prerequisites](docs/deployment.md) before any Azure deployment.

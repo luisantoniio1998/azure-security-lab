@@ -3,6 +3,9 @@ import json
 import time
 import secrets
 import logging
+import uuid
+import sys
+from contextvars import ContextVar
 
 from datetime import datetime, timezone
 from dotenv import load_dotenv
@@ -17,8 +20,13 @@ if not API_KEY or API_KEY.startswith("@Microsoft.KeyVault("):
     raise RuntimeError("API_KEY must be supplied through the environment or a resolved Key Vault reference")
 
 # Logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("security")
+logger.setLevel(logging.INFO)
+logger.propagate = False
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter("%(message)s"))
+logger.handlers = [handler]
+request_id = ContextVar("request_id", default=None)
 
 # Application
 app = FastAPI(
@@ -32,6 +40,10 @@ def security_event(event: str, **fields):
     logger.info(json.dumps({
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "event": event,
+        "schema_version": "1.0",
+        "service": "azure-security-lab",
+        "environment": os.getenv("APP_ENV", "development"),
+        "request_id": request_id.get(),
         **fields
     }))
 
@@ -40,6 +52,7 @@ def security_event(event: str, **fields):
 @app.middleware("http")
 async def security_logging(request: Request, call_next):
     start = time.perf_counter()
+    token = request_id.set(str(uuid.uuid4()))
 
     try:
         response = await call_next(request)
@@ -48,19 +61,22 @@ async def security_logging(request: Request, call_next):
             "http_request_error",
             source_ip=request.client.host if request.client else None,
             method=request.method,
-            path=request.url.path
+            path=request.url.path if request.url.path in {"/health", "/secure"} else "<unmatched>"
         )
+        request_id.reset(token)
         raise
 
     security_event(
         "http_request",
         source_ip=request.client.host if request.client else None,
         method=request.method,
-        path=request.url.path,
+        path=request.url.path if request.url.path in {"/health", "/secure"} else "<unmatched>",
         status_code=response.status_code,
         duration_ms=round((time.perf_counter() - start) * 1000, 2)
     )
 
+    response.headers["X-Request-ID"] = request_id.get()
+    request_id.reset(token)
     return response
 
 
@@ -74,6 +90,7 @@ def verify_api_key(
             "authentication_failure",
             source_ip=request.client.host if request.client else None,
             method="api_key",
+            outcome="failure",
             reason="invalid_or_missing_key"
         )
 
@@ -85,7 +102,8 @@ def verify_api_key(
     security_event(
         "authentication_success",
         source_ip=request.client.host if request.client else None,
-        method="api_key"
+        method="api_key",
+        outcome="success"
     )
 
 
