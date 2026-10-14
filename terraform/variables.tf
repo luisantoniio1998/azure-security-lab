@@ -9,3 +9,9 @@ variable "deploy_workloads" {
   type        = bool
   default     = false
 }
+
+variable "api_key_secret_uri" {
+  description = "Existing Key Vault secret URI, never the API key value. Grant the web app identity secret-read access before startup."
+  type        = string
+  default     = ""
+}
