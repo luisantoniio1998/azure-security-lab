@@ -57,3 +57,12 @@ terraform.rc
 *.swp
 *.swo
 *~
+
+# Python and generated artifacts
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+dist/
+work/
+*.jsonl
