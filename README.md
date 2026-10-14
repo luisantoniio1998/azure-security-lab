@@ -1,36 +1,24 @@
 # Azure Security Lab
 
-A personal lab to learn Azure security. I'm building a small environment, trying security controls and learning how to monitor what happens.
+My lab for learning security by design in Azure: build the infrastructure with Terraform, apply security controls and use CrowdStrike to investigate the logs.
 
-## So far
+## What I've worked on
 
-- Set up a virtual network with separate backend and database subnets using Terraform.
-- Added network security rules.
-- Worked through Entra ID permissions, an email alert for RBAC changes and a policy to block public IPs.
-- Added a small Python API with API-key authentication and JSON security logs.
-- Prepared the App Service and private PostgreSQL configuration, but kept them disabled to save credits.
+- Terraform for the network and workload configuration.
+- Separate backend and database subnets, with network security groups controlling traffic.
+- Entra ID and RBAC permissions, an email alert for RBAC changes and an Azure Policy to block public IPs. These were earlier lab exercises outside the current Terraform code.
+- App Service configuration with HTTPS, managed identity and a Key Vault secret reference.
+- Private PostgreSQL configuration with private DNS and Entra authentication instead of passwords.
+- A small API to generate authentication and request events for monitoring.
 
-The API runs locally. It isn't connected to PostgreSQL or CrowdStrike yet.
+## Where it stands
 
-## Run the app
+The network configuration is in Terraform. The API has been tested locally. App Service and PostgreSQL are still disabled (`deploy_workloads=false`) to preserve Azure credits.
 
-```bash
-python3 -m venv app/.venv
-app/.venv/bin/pip install -r app/requirements.txt
-cp app/.env.example app/.env
-```
-
-Add a local API key to `app/.env`, then:
-
-```bash
-cd app
-.venv/bin/uvicorn main:app --reload --no-access-log
-```
-
-Try `/health` at `http://127.0.0.1:8000`. `/secure` needs the key in the `X-API-Key` header.
+The application still needs database connectivity and Key Vault access permissions. CrowdStrike is not connected yet.
 
 ## Next
 
-Send the local logs to CrowdStrike when trial access is available, then try a detection for failed authentication attempts.
+Once CrowdStrike trial access is available, ingest the lab events and test detections for suspicious activity. Local events let me start that part before deploying the paid Azure workloads.
 
-Paid Azure workloads stay off (`deploy_workloads=false`). No deployment until I've checked the cost.
+Any Azure deployment comes after checking the plan and cost.
