@@ -35,7 +35,7 @@ resource "azurerm_linux_web_app" "backend" {
 
   lifecycle {
     precondition {
-      condition     = !var.deploy_workloads || can(regex("^https://[a-zA-Z0-9-]+\\.vault\\.azure\\.net/secrets/[a-zA-Z0-9-]+(/[a-zA-Z0-9]+)?$", var.api_key_secret_uri))
+      condition     = !var.deploy_workloads || can(regex("^https://[a-zA-Z0-9-]+\.vault\.azure\.net/secrets/[a-zA-Z0-9-]+(/[a-zA-Z0-9]+)?$", var.api_key_secret_uri))
       error_message = "Paid workloads require an existing Key Vault API key secret URI and explicit deployment approval."
     }
   }

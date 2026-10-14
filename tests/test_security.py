@@ -6,6 +6,8 @@ import os
 from pathlib import Path
 import unittest
 import zipfile
+import subprocess
+import sys
 
 os.environ["APP_ENV"] = "production"
 os.environ["API_KEY"] = "local-test-key-only"
@@ -60,6 +62,7 @@ class SecurityTests(unittest.TestCase):
         self.assertIsNone(main.request_id.get())
 
     def test_archive_allowlist(self):
+        subprocess.run([sys.executable, "scripts/package_app.py"], check=True, capture_output=True)
         with zipfile.ZipFile("dist/app.zip") as archive:
             self.assertEqual(set(archive.namelist()), {"main.py", "requirements.txt"})
 
