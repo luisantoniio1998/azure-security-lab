@@ -1,6 +1,6 @@
 # Azure Security Lab
 
-My lab for learning security by design in Azure: build the infrastructure with Terraform, apply security controls and use CrowdStrike to investigate the logs.
+My Azure lab for practising Terraform, network separation, and application security configuration. I’m keeping track of what is in the code and what I have actually tested.
 
 ## What I've worked on
 
@@ -17,13 +17,9 @@ The network configuration is in Terraform. The API has been tested locally. App 
 
 The application still needs database connectivity and Key Vault access permissions. CrowdStrike is not connected yet.
 
-## Next
+The local API can generate events without deploying the paid Azure workloads. I check the Terraform plan and cost before deploying to Azure.
 
-Once CrowdStrike trial access is available, ingest the lab events and test detections for suspicious activity. Local events let me start that part before deploying the paid Azure workloads.
-
-Any Azure deployment comes after checking the plan and cost.
-
-Relevant Evidence on Azure UI: 
+## Screenshots from the Azure exercises
 
 <img width="985" height="495" alt="Screenshot 2026-10-13 at 17 28 09" src="https://github.com/user-attachments/assets/e0cd5de4-8382-4b02-9dd7-add2b6ff6926" />
 <img width="2093" height="950" alt="Screenshot 2026-10-13 at 17 27 52" src="https://github.com/user-attachments/assets/a6c1fc56-801c-4a78-98de-9dce76c4d935" />
