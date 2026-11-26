@@ -64,7 +64,9 @@ class SecurityTests(unittest.TestCase):
     def test_archive_allowlist(self):
         subprocess.run([sys.executable, "scripts/package_app.py"], check=True, capture_output=True)
         with zipfile.ZipFile("dist/app.zip") as archive:
-            self.assertEqual(set(archive.namelist()), {"main.py", "requirements.txt"})
+            self.assertEqual(set(archive.namelist()), {
+                "main.py", "requirements.txt", "index.html", "database.py", "schema.sql"
+            })
 
     def test_invalid_event_rejected(self):
         with self.assertRaises(ValueError):

@@ -1,23 +1,30 @@
 # Azure Security Lab
 
-My Azure lab for practising Terraform, network separation, and application security configuration. I’m keeping track of what is in the code and what I have actually tested.
+My Azure lab for practising Terraform, network separation and application security. I deployed a small notes app and connected its security logs to Wazuh.
 
-## What I've worked on
+## What I've built
 
-- Terraform for the network and workload configuration.
-- Separate backend and database subnets, with network security groups controlling traffic.
-- Entra ID and RBAC permissions, an email alert for RBAC changes and an Azure Policy to block public IPs. These were earlier lab exercises outside the current Terraform code.
-- App Service configuration with HTTPS, managed identity and a Key Vault secret reference.
-- Private PostgreSQL configuration with private DNS and Entra authentication instead of passwords.
-- A small API to generate authentication and request events for monitoring.
+- A FastAPI notes app with a simple frontend on Azure App Service, backed by PostgreSQL.
+- Separate app and database subnets with NSGs, private PostgreSQL access, Entra authentication and verified TLS.
+- An app managed identity, a Key Vault API-key reference, and app/deployment access restricted to my lab IP.
+- Terraform for the workloads, vault, VNet lock and alerts for VNet deletion, lock deletion and NSG rule changes. The original RBAC alert, Reader assignment and public-IP denial policy remain outside Terraform.
+- Local Wazuh containers, custom detection rules and dashboards for authentication, HTTP responses and note activity. I used Wazuh after CrowdStrike trial access wasn't available.
+
+## What I've tested
+
+Saving and deleting notes, data remaining after refresh, successful and failed authentication, and linking events through request IDs. A level 10 rule detects five authentication failures within 60 seconds across the app.
+
+```text
+Browser → Azure app → private PostgreSQL
+               ↓ JSON logs pulled over HTTPS
+        Mac collector → local Wazuh
+```
 
 ## Where it stands
 
-The network configuration is in Terraform. The API has been tested locally. App Service and PostgreSQL are still disabled (`deploy_workloads=false`) to preserve Azure credits.
+Azure workloads are deployed; Wazuh runs locally during lab sessions. The collector suppresses replayed events but isn't a durable production pipeline. Client IPs currently show Azure's proxy. Database identity mapping, table setup and grants were done separately from Terraform.
 
-The application still needs database connectivity and Key Vault access permissions. CrowdStrike is not connected yet.
-
-The local API can generate events without deploying the paid Azure workloads. I check the Terraform plan and cost before deploying to Azure.
+Secrets, state, logs and Wazuh's local Compose runtime stay out of Git. Paid resources default to disabled; the deployed lab uses `deploy_workloads=true`. I review plans and costs before applying. Stopping local Docker doesn't stop Azure charges.
 
 ## Screenshots from the Azure exercises
 

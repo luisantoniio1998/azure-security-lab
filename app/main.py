@@ -5,11 +5,19 @@ import secrets
 import logging
 import uuid
 import sys
+from pathlib import Path
 from contextvars import ContextVar
 
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Header, HTTPException, Depends
+from fastapi.responses import FileResponse
+from pydantic import BaseModel, Field
+
+if __package__:
+    from . import database
+else:
+    import database
 
 # Environment
 if os.getenv("APP_ENV", "development") != "production":
@@ -34,6 +42,9 @@ app = FastAPI(
     description="Security Engineering Lab",
     version="1.0.0"
 )
+
+class NoteInput(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
 
 
 def security_event(event: str, **fields):
@@ -108,6 +119,11 @@ def verify_api_key(
 
 
 # Public Endpoint
+@app.get("/", include_in_schema=False)
+def frontend():
+    return FileResponse(Path(__file__).with_name("index.html"))
+
+
 @app.get("/health")
 def health():
     return {
@@ -124,3 +140,26 @@ def secure_endpoint():
         "status": "authorized",
         "message": "Access granted"
     }
+
+
+@app.get("/notes", dependencies=[Depends(verify_api_key)])
+def list_notes():
+    return database.list_notes()
+
+
+@app.post("/notes", status_code=201, dependencies=[Depends(verify_api_key)])
+def create_note(body: NoteInput):
+    text = body.text.strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="Write something first")
+    note = database.create_note(text)
+    security_event("note_created", note_id=str(note["id"]))
+    return note
+
+
+@app.delete("/notes/{note_id}", dependencies=[Depends(verify_api_key)])
+def delete_note(note_id: uuid.UUID):
+    if not database.delete_note(note_id):
+        raise HTTPException(status_code=404, detail="Note not found")
+    security_event("note_deleted", note_id=str(note_id))
+    return {"status": "deleted"}

@@ -93,3 +93,20 @@ resource "azurerm_network_security_rule" "deny_other_database_clients" {
   resource_group_name         = azurerm_resource_group.lab.name
   network_security_group_name = azurerm_network_security_group.database.name
 }
+
+resource "azurerm_network_security_rule" "deny_other_database_inbound" {
+  name      = "Deny-Other-Database-Inbound"
+  priority  = 400
+  direction = "Inbound"
+  access    = "Deny"
+  protocol  = "*"
+
+  source_port_range      = "*"
+  destination_port_range = "*"
+
+  source_address_prefix      = "VirtualNetwork"
+  destination_address_prefix = "10.10.2.0/24"
+
+  resource_group_name         = azurerm_resource_group.lab.name
+  network_security_group_name = azurerm_network_security_group.database.name
+}

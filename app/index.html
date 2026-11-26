@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security Lab / Notes</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #edece5; color: #202821; font: 16px/1.5 system-ui, sans-serif; }
+    main { max-width: 900px; margin: 48px auto; padding: 24px; }
+    header { border-bottom: 3px solid; margin-bottom: 28px; }
+    .label { font: 13px monospace; text-transform: uppercase; letter-spacing: 2px; }
+    h1 { font-size: clamp(32px, 6vw, 56px); line-height: 1.1; margin: 16px 0; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    section { background: #fffef8; border: 2px solid; padding: 22px; box-shadow: 4px 4px 0 #202821; }
+    h2 { font-size: 20px; margin-top: 0; }
+    label { display: block; margin-bottom: 8px; }
+    input, textarea { width: 100%; padding: 12px; font: inherit; border: 1px solid; background: #fff; }
+    button { padding: 12px 16px; font: inherit; font-weight: 600; cursor: pointer; border: 2px solid #202821; background: #d5e8a5; color: #202821; }
+    button:hover { background: #bfd785; }
+    button:disabled { opacity: .6; cursor: wait; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid #7760ce; outline-offset: 3px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .secondary { background: #f4d6b4; }
+    #result { margin-top: 24px; box-shadow: none; background: #202821; color: #edf3dd; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
+    .hint { font-size: 14px; }
+    a { color: inherit; }
+    @media(max-width: 640px) { main { margin: 12px auto; padding: 18px; } .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="label">Azure Security Lab / Notebook</div>
+    <h1>Small notes.<br>Clear head.</h1>
+    <p>A little space for things worth remembering.</p>
+  </header>
+  <section id="unlock">
+    <h2>Open your notebook</h2>
+    <form id="unlock-form">
+      <label for="key">Lab access key</label>
+      <input id="key" type="password" autocomplete="off" required placeholder="Enter your lab key">
+      <div class="actions"><button>Open notebook</button></div>
+    </form>
+  </section>
+  <div id="notebook" hidden>
+    <div class="actions" style="margin-bottom:20px"><button id="lock" class="secondary" type="button">Lock notebook</button></div>
+    <div class="grid">
+      <section>
+        <h2>01 / Write it down</h2>
+        <form id="note-form">
+          <label for="text">Your note</label>
+          <textarea id="text" rows="6" maxlength="2000" required placeholder="An idea, a reminder, something you learned…"></textarea>
+          <div class="actions"><button>Save note</button></div>
+        </form>
+        <p class="hint">Notes use PostgreSQL once the database is configured. Anyone with the lab key shares this notebook.</p>
+      </section>
+      <section>
+        <h2>02 / Your notes</h2>
+        <div id="notes"></div>
+      </section>
+    </div>
+  </div>
+  <p id="message" role="status" aria-live="polite"></p>
+</main>
+<script>
+  let key = '';
+  let busy = false;
+  const notebook = document.getElementById('notebook');
+  const unlock = document.getElementById('unlock');
+  const message = document.getElementById('message');
+  const list = document.getElementById('notes');
+  function lock() {
+    key = '';
+    notebook.hidden = true;
+    unlock.hidden = false;
+    list.replaceChildren();
+    document.getElementById('text').value = '';
+    document.getElementById('key').value = '';
+  }
+  async function api(path, options = {}) {
+    const result = await fetch(path, { ...options, cache: 'no-store',
+      headers: {'X-API-Key': key, 'Content-Type': 'application/json'},
+      signal: AbortSignal.timeout(10000) });
+    const body = await result.json();
+    if (!result.ok) {
+      if (result.status === 401) lock();
+      throw new Error(result.status === 401 ? 'Access key not accepted.' :
+        typeof body.detail === 'string' ? body.detail : 'Please check your note and try again.');
+    }
+    return body;
+  }
+  async function refresh() {
+    const notes = await api('/notes');
+    list.replaceChildren();
+    if (!notes.length) {
+      list.textContent = 'Nothing here yet. Write your first note.';
+    }
+    for (const note of notes) {
+      const article = document.createElement('article');
+      article.style.cssText = 'border-bottom:1px solid #bbc0b3;padding:12px 0;overflow-wrap:anywhere';
+      const text = document.createElement('p');
+      text.style.whiteSpace = 'pre-wrap';
+      text.textContent = note.text;
+      const date = document.createElement('p');
+      date.className = 'hint';
+      date.textContent = new Date(note.created_at).toLocaleString();
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'secondary';
+      remove.textContent = 'Delete';
+      remove.setAttribute('aria-label', 'Delete note from ' + date.textContent);
+      remove.addEventListener('click', () => run(async () => {
+        await api('/notes/' + encodeURIComponent(note.id), {method:'DELETE'});
+        await refresh();
+        message.textContent = 'Note deleted.';
+      }));
+      article.append(text, date, remove);
+      list.append(article);
+    }
+  }
+  async function run(action) {
+    if (busy) return;
+    busy = true;
+    document.querySelectorAll('button').forEach(b => b.disabled = true);
+    message.textContent = '';
+    try { await action(); }
+    catch (error) { message.textContent = error instanceof TypeError || error.name === 'TimeoutError'
+      ? 'Cannot reach the app. Check your local server and try again.' : error.message; }
+    finally {
+      busy = false;
+      document.querySelectorAll('button').forEach(b => b.disabled = false);
+    }
+  }
+  document.getElementById('unlock-form').addEventListener('submit', event => {
+    event.preventDefault();
+    run(async () => {
+      key = document.getElementById('key').value;
+      await refresh();
+      document.getElementById('key').value = '';
+      unlock.hidden = true;
+      notebook.hidden = false;
+      document.getElementById('text').focus();
+    });
+  });
+  document.getElementById('note-form').addEventListener('submit', event => {
+    event.preventDefault();
+    run(async () => {
+      const input = document.getElementById('text');
+      if (!input.value.trim()) { message.textContent = 'Write something first.'; return; }
+      await api('/notes', {method:'POST', body:JSON.stringify({text: input.value})});
+      input.value = '';
+      await refresh();
+      message.textContent = 'Note saved.';
+    });
+  });
+  document.getElementById('lock').addEventListener('click', lock);
+</script>
+</body>
+</html>

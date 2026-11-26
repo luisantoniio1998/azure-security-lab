@@ -15,6 +15,7 @@ resource "azurerm_subnet" "backend" {
   resource_group_name  = azurerm_resource_group.lab.name
   virtual_network_name = azurerm_virtual_network.lab.name
   address_prefixes     = ["10.10.1.0/24"]
+  service_endpoints    = ["Microsoft.KeyVault"]
 
   delegation {
     name = "appservice-delegation"
@@ -34,6 +35,7 @@ resource "azurerm_subnet" "database" {
   resource_group_name  = azurerm_resource_group.lab.name
   virtual_network_name = azurerm_virtual_network.lab.name
   address_prefixes     = ["10.10.2.0/24"]
+  service_endpoints    = ["Microsoft.Storage"]
 
   delegation {
     name = "postgresql-delegation"

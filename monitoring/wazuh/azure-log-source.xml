@@ -1,0 +1,5 @@
+<localfile>
+  <log_format>json</log_format>
+  <location>/var/log/azure-lab/azure-security-events.jsonl</location>
+  <only-future-events>no</only-future-events>
+</localfile>

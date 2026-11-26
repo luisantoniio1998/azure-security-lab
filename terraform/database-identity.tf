@@ -29,6 +29,11 @@ resource "azurerm_postgresql_flexible_server_active_directory_administrator" "ad
   object_id      = var.postgresql_admin_object_id
   principal_name = var.postgresql_admin_principal_name
   principal_type = var.postgresql_admin_principal_type
+
+  # Azure truncates the returned display name; the object ID identifies the admin.
+  lifecycle {
+    ignore_changes = [principal_name]
+  }
 }
 
 data "azurerm_client_config" "current" {}

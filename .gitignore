@@ -43,6 +43,7 @@ terraform.rc
 *.pem
 *.key
 *.pfx
+*.srl
 
 # ==========================================
 # macOS / Editors
@@ -66,3 +67,6 @@ __pycache__/
 dist/
 work/
 *.jsonl
+
+# Local Wazuh credentials, certificates and generated configuration
+monitoring/wazuh/.runtime/
