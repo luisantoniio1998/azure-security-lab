@@ -26,8 +26,28 @@ Azure workloads are deployed; Wazuh runs locally during lab sessions. The collec
 
 Secrets, state, logs and Wazuh's local Compose runtime stay out of Git. Paid resources default to disabled; the deployed lab uses `deploy_workloads=true`. I review plans and costs before applying. Stopping local Docker doesn't stop Azure charges.
 
-## Screenshots from the Azure exercises
+## App and monitoring
+
+The notes app running in Azure:
+
+![Notes app with saved notes](evidence/notes_app_open.png)
+
+Wazuh dashboard showing failed logins, a repeated-failure alert, HTTP responses and related events:
+
+![Wazuh application security dashboard](evidence/dash_wazuh.png)
+
+<details>
+<summary>Locked notebook</summary>
+
+![Notebook access-key screen](evidence/notes_app_locked.png)
+
+</details>
+
+<details>
+<summary>Earlier Azure security exercises</summary>
 
 <img width="985" height="495" alt="Screenshot 2026-10-13 at 17 28 09" src="https://github.com/user-attachments/assets/e0cd5de4-8382-4b02-9dd7-add2b6ff6926" />
 <img width="2093" height="950" alt="Screenshot 2026-10-13 at 17 27 52" src="https://github.com/user-attachments/assets/a6c1fc56-801c-4a78-98de-9dce76c4d935" />
 <img width="1474" height="791" alt="Screenshot 2026-10-13 at 17 18 37" src="https://github.com/user-attachments/assets/3f276723-2783-462c-9786-a65165b7cac3" />
+
+</details>
